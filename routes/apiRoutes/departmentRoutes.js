@@ -21,7 +21,7 @@ router.get('/department', (req,res) => {
 //add a department 
 router.post('/department', ({ body }, res) => {
     if (!body.name) {
-      res.status(400).json({ error: errors });
+      res.status(400).json({ error });
       return;
     }
   

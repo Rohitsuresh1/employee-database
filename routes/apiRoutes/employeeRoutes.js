@@ -45,9 +45,9 @@ router.get('/managersort', (req,res) => {
   });
 
 //Update employee role
-router.put('/employee/:id', (req,res) => {
+router.put('/employee', ({body},res) => {
     const sql= `UPDATE employee SET role_id=? WHERE id=?`;
-    const params = [req.params.id];
+    const params = [body.role_id, body.id];
     db.query(sql, params , (err, body) => {
         if (err) {
             res.status(400).json({ error: err.message });
@@ -82,14 +82,14 @@ router.get('/departmentsort', (req,res) => {
 });
 
 // add an employee
-router.post('/employee', ({req},res) => {
+router.post('/employee', ({ body },res) => {
     const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) 
                 VALUES (?, ?, ?, ?)`;
     const params = [
-        req.first_name,
-        req.last_name,
-        req.role_id,
-        req.manager_id
+        body.first_name,
+        body.last_name,
+        body.role_id,
+        body.manager_id
     ];
     db.query(sql, params , (err, body) => {
         if (err) {
@@ -104,7 +104,7 @@ router.post('/employee', ({req},res) => {
 });  
 
 // delete an employee
-router.delete('/employeerole/:id', (req, res) => {
+router.delete('/employee/:id', (req, res) => {
     const sql = `DELETE FROM employee WHERE id = ?`;
     const params = [req.params.id];
   
@@ -126,9 +126,9 @@ router.delete('/employeerole/:id', (req, res) => {
   });
 
 //Update employee manager 
-router.put('/employeemanager/:id', (req,res) => {
+router.put('/employeemanager', ({body},res) => {
     const sql= `UPDATE employee SET manager_id=? WHERE id=?`;
-    const params = [req.params.id];
+    const params = [body.manager_id, body.id];
     db.query(sql, params , (err, body) => {
         if (err) {
             res.status(400).json({ error: err.message });
