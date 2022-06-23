@@ -28,10 +28,11 @@ router.get('/employee', (req, res) => {
 
 // View all employees by manager
 router.get('/managersort', (req,res) => {
-    const sql = `SELECT man.first_name AS manager_name, emp.first_name AS employee_firstname, emp.last_name AS employee_lastname
+    const sql = `SELECT man.first_name AS manager_name, man.id AS manager_id ,emp.first_name AS employee_firstname, emp.last_name AS employee_lastname, emp.id as employee_id
                 FROM employee emp
                 JOIN employee man
-                ON emp.manager_id = man.id`;
+                ON emp.manager_id = man.id
+                ORDER BY man.id`;
     db.query(sql, (err,rows) => {
       if(err) {
           res.status(500).json({ error: err.message });
