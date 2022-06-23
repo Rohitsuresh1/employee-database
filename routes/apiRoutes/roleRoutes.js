@@ -5,7 +5,7 @@ const inputCheck = require('../../utils/inputCheck');
 
 
 // Get all roles with the associated departments
-router.get('/roles', (req, res) => {
+router.get('/role', (req, res) => {
     const sql = `SELECT roles.*, department.name 
                   AS department_name 
                   FROM roles 
@@ -25,7 +25,7 @@ router.get('/roles', (req, res) => {
   });
 
 //add a role
-router.post('/roles', ({ body }, res) => {
+router.post('/role', ({ body }, res) => {
     const errors = inputCheck(
         body,
         'title',
@@ -52,7 +52,7 @@ router.post('/roles', ({ body }, res) => {
 });
 
 //delete a role
-router.delete('/roles/:id', (req, res) => {
+router.delete('/role/:id', (req, res) => {
     const sql = `DELETE FROM roles WHERE id = ?`;
     const params = [req.params.id];
   

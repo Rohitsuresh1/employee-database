@@ -6,7 +6,8 @@ const fetch = require('node-fetch');
 const { response } = require('express');
 const { json } = require('body-parser');
 const { async } = require('rxjs');
-
+const inputCheck = require('./utils/inputCheck');
+var table= [];
 
 
 
@@ -43,34 +44,40 @@ inquirer.prompt(
   })
 .then(({ choise }) => {
   if(choise==='View all roles'){
-    allRoles();
+    let url = 'http://localhost:3001/api/role';
+    allGetRoutes(url);
   }
   else if(choise==='View all employees'){
-    allEmployees();
+    let url = 'http://localhost:3001/api/employee';
+    allGetRoutes(url);
   }
   else if(choise==='View all departments'){
-    allDepartments();
+    let url = 'http://localhost:3001/api/department';
+    allGetRoutes(url);
   }
   else if(choise==='View all employees by department'){
-    viewByDepartment();
+    let url = 'http://localhost:3001/api/departmentsort';
+    allGetRoutes(url);
   }
   else if(choise==='View all employees by manager'){
-    viewByManager();
+    let url = 'http://localhost:3001/api/managersort';
+    allGetRoutes(url);
   }
   else if(choise==='View total allocated department budjet'){
-    console.log('budjet');
+    let url = 'http://localhost:3001/api/departmenttotal';
+    allGetRoutes(url);
   }
   else if(choise==='Update an employee manager'){
     console.log('update manager');
   }
   else if(choise==='Delete an employee'){
-    console.log('delete empl');
+    deleteRow('employee');
   }
   else if(choise==='Delete a department'){
-    console.log('delete dept');
+    deleteRow('department');
   }
   else if(choise==='Delete a role'){
-    console.log("delete role");
+    deleteRow('role');
   }
   else if(choise==='Add a department'){
     console.log('add dept');
@@ -90,21 +97,8 @@ inquirer.prompt(
   }
 });
 
-async function allRoles() {
-  await fetch('http://localhost:3001/api/roles', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then(data => data.text())
-    .then(text => {
-    let roles = JSON.parse(text);
-    console.table(roles.data);
-  })
-};
-
-async function allEmployees() {
-  await fetch('http://localhost:3001/api/employee', {
+async function allGetRoutes(url) {
+  await fetch(url, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
@@ -113,44 +107,89 @@ async function allEmployees() {
     .then(text => {
     let rows = JSON.parse(text);
     console.table(rows.data);
+    table = rows.data;
+    return rows.data;
   })
 };
 
-async function allDepartments() {
-  await fetch('http://localhost:3001/api/department', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then(data => data.text())
-    .then(text => {
-    let rows = JSON.parse(text);
-    console.table(rows.data);
-  })
+async function deleteRow(row) {
+  await allGetRoutes(`http://localhost:3001/api/${row}`);
+  let choices = [];
+  for(i=0;i<table.length;i++) {
+    choices.push(table[i].id);
+  };
+  // console.log(choices);
+  // console.log("table ",table);
+  inquirer.prompt(
+    {
+        type: 'input',
+        name: 'id',
+        message: `Please enter the ${row} id you wish to delete: `,
+        validate: inputCheck => {
+          for(i=0;i<choices.length;i++) {
+            if (choices[i]==inputCheck){
+              return true;
+            }
+          };
+          console.log(' Please choose a valid id!');
+          return false;
+        }
+    })
+    .then(({id}) => {
+      fetch(`http://localhost:3001/api/${row}/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(data => data.text())
+        .then(text => {
+          let rows = JSON.parse(text);
+          console.log('-------------')
+          console.log(rows.message,`${row} with id:`,rows.id);
+          console.log('-------------');
+          allGetRoutes(`http://localhost:3001/api/${row}`);
+        })
+    });
 };
 
-async function viewByDepartment() {
-  await fetch('http://localhost:3001/api/departmentsort', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then(data => data.text())
-    .then(text => {
-    let rows = JSON.parse(text);
-    console.table(rows.data);
-  })
-};
-
-async function viewByManager() {
-  await fetch('http://localhost:3001/api/managersort', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  }).then(data => data.text())
-    .then(text => {
-    let rows = JSON.parse(text);
-    console.table(rows.data);
-  })
-};
+// async function deleteDept() {
+//   await allGetRoutes('http://localhost:3001/api/department');
+//   let choices = [];
+//   for(i=0;i<table.length;i++) {
+//     choices.push(table[i].id);
+//   };
+//   // console.log(choices);
+//   // console.log("table ",table);
+//   inquirer.prompt(
+//     {
+//         type: 'input',
+//         name: 'id',
+//         message: 'Please enter the department id you wish to delete: ',
+//         validate: inputCheck => {
+//           for(i=0;i<choices.length;i++) {
+//             if (choices[i]==inputCheck){
+//               return true;
+//             }
+//           };
+//           console.log(' Please choose a valid id!');
+//           return false;
+//         }
+//     })
+//     .then(({id}) => {
+//       fetch(`http://localhost:3001/api/department/${id}`, {
+//         method: 'DELETE',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//       })
+//         .then(data => data.text())
+//         .then(text => {
+//           let rows = JSON.parse(text);
+//           console.log('-------------')
+//           console.log(rows.message,'department with id:',rows.id);
+//           console.log('-------------');
+//           allGetRoutes('http://localhost:3001/api/department');
+//         })
+//     });
+// };
