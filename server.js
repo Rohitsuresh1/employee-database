@@ -485,7 +485,7 @@ async function addEmployee() {
       {
         type: 'input',
         name: 'role',
-        message: `Enter the role id of this new employee `,
+        message: `Enter the role id of this new employee: `,
         validate: inputCheck => {
           for(i=0;i<titles.length;i++) {
             if (titles[i]==inputCheck){
@@ -499,7 +499,7 @@ async function addEmployee() {
       {
         type: 'input',
         name: 'mid',
-        message: `Enter the manager's id for the new employee `,
+        message: `Enter the manager's id for the new employee (enter 0 if no manager): `,
         validate: inputCheck => {
           for(i=0;i<manager.length;i++) {
             if (manager[i]==inputCheck){
