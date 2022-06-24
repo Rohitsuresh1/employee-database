@@ -7,6 +7,7 @@ const { response } = require('express');
 const { json } = require('body-parser');
 const { async } = require('rxjs');
 const inputCheck = require('./utils/inputCheck');
+const { start } = require('repl');
 var table= [];
 
 
@@ -35,68 +36,84 @@ db.connect(err => {
   });
 });
 
-inquirer.prompt(
+async function startApp() {
+  inquirer.prompt(
   {
       type: 'list',
       name: 'choise',
       message: 'Do you want to ',
       choices: ['View all roles','View all employees','View all departments','View all employees by department','View all employees by manager','Add a department','Add a role','Add an employee','View total allocated department budjet','Update an employee role','Update an employee manager','Delete an employee','Delete a department','Delete a role','Exit']
   })
-.then(({ choise }) => {
-  if(choise==='View all roles'){
-    let url = 'http://localhost:3001/api/role';
-    allGetRoutes(url);
-  }
-  else if(choise==='View all employees'){
-    let url = 'http://localhost:3001/api/employee';
-    allGetRoutes(url);
-  }
-  else if(choise==='View all departments'){
-    let url = 'http://localhost:3001/api/department';
-    allGetRoutes(url);
-  }
-  else if(choise==='View all employees by department'){
-    let url = 'http://localhost:3001/api/departmentsort';
-    allGetRoutes(url);
-  }
-  else if(choise==='View all employees by manager'){
-    let url = 'http://localhost:3001/api/managersort';
-    allGetRoutes(url);
-  }
-  else if(choise==='View total allocated department budjet'){
-    let url = 'http://localhost:3001/api/departmenttotal';
-    allGetRoutes(url);
-  }
-  else if(choise==='Update an employee manager'){
-    updateManager();
-    console.log('update manager');
-  }
-  else if(choise==='Delete an employee'){
-    deleteRow('employee');
-  }
-  else if(choise==='Delete a department'){
-    deleteRow('department');
-  }
-  else if(choise==='Delete a role'){
-    deleteRow('role');
-  }
-  else if(choise==='Add a department'){
-    console.log('add dept');
-  }
-  else if(choise==='Add a role'){
-    console.log('add role');
-  }
-  else if(choise==='Add an employee'){
-    console.log('add emplo');
-  }
-  else if(choise==='Update an employee role'){
-    updateRole();
-  }
-  else {
-  
-    // exit
-  }
-});
+  .then(async ({ choise }) => {
+    if(choise==='View all roles'){
+      let url = 'http://localhost:3001/api/role';
+      await allGetRoutes(url);
+      restart();
+    }
+    else if(choise==='View all employees'){
+      let url = 'http://localhost:3001/api/employee';
+      await allGetRoutes(url);
+      restart();
+    }
+    else if(choise==='View all departments'){
+      let url = 'http://localhost:3001/api/department';
+      await allGetRoutes(url);
+      restart();
+    }
+    else if(choise==='View all employees by department'){
+      let url = 'http://localhost:3001/api/departmentsort';
+      await allGetRoutes(url);
+      restart();
+    }
+    else if(choise==='View all employees by manager'){
+      let url = 'http://localhost:3001/api/managersort';
+      await allGetRoutes(url);
+      restart();
+    }
+    else if(choise==='View total allocated department budjet'){
+      let url = 'http://localhost:3001/api/departmenttotal';
+      await allGetRoutes(url);
+      restart();
+    }
+    else if(choise==='Update an employee manager'){
+      await updateManager();
+      restart();
+    }
+    else if(choise==='Delete an employee'){
+      await deleteRow('employee');
+      restart();
+    }
+    else if(choise==='Delete a department'){
+      await deleteRow('department');
+      restart();
+    }
+    else if(choise==='Delete a role'){
+      await deleteRow('role');
+      restart();
+    }
+    else if(choise==='Add a department'){
+      await addDept();
+      restart();
+    }
+    else if(choise==='Add a role'){
+      await addRole();
+      restart();
+    }
+    else if(choise==='Add an employee'){
+      await addEmployee();
+      restart();
+    }
+    else if(choise==='Update an employee role'){
+      await updateRole();
+      restart();
+    }
+    else {
+      console.log('--------------------------------------');
+      console.log('_________ Have a great day!___________');
+      console.log('--------------------------------------');
+      process.exit();
+    }
+});}
 
 async function allGetRoutes(url) {
   await fetch(url, {
@@ -121,7 +138,7 @@ async function deleteRow(row) {
   };
   // console.log(choices);
   // console.log("table ",table);
-  inquirer.prompt(
+  await inquirer.prompt(
     {
         type: 'input',
         name: 'id',
@@ -166,7 +183,7 @@ async function updateManager() {
     managerChoices.push(table[i].manager_id);
   };
   // console.log(employeeChoices);
-  inquirer.prompt([
+  await inquirer.prompt([
       {
         type: 'input',
         name: 'eid',
@@ -231,7 +248,7 @@ async function updateRole() {
     roleChoices.push(table[i].id);
   };
   // console.log(employeeChoices);
-  inquirer.prompt([
+  await inquirer.prompt([
       {
         type: 'input',
         name: 'eid',
@@ -256,7 +273,7 @@ async function updateRole() {
               return true;
             }
           };
-          console.log(' Please choose a valid manager id!');
+          console.log(' Please choose a valid role id!');
           return false;
         }
       }
@@ -282,3 +299,263 @@ async function updateRole() {
         })
     });
 };
+
+async function addDept() {
+  await allGetRoutes(`http://localhost:3001/api/department`);
+  let names = [];
+  // console.log("table ",table);
+  for(i=0;i<table.length;i++) {
+    names.push(table[i].name);
+  };
+  // console.log(employeeChoices);
+  await inquirer.prompt(
+      {
+        type: 'input',
+        name: 'name',
+        message: `Enter the new department name that you would like to add: `,
+        validate: inputCheck => {
+          for(i=0;i<names.length;i++) {
+            if (names[i]==inputCheck){
+              console.log(' Please create a department that does not already exist!');
+              return false;
+            }
+          };
+          return true;
+        }
+      }  
+    )
+    .then(({ name }) => {
+       fetch(`http://localhost:3001/api/department`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: name
+        }),
+      })
+        .then(data => data.text())
+        .then(text => {
+          let rows = JSON.parse(text);
+          console.log('-------------')
+          console.log(rows.message,`, new department has been added!`,);
+          console.log('-------------');
+          allGetRoutes(`http://localhost:3001/api/department`);
+        })
+    });
+};
+
+async function addRole() {
+  console.log('|----------------------------|');
+  console.log(' All Roles at the oranization');
+  console.log('|----------------------------|');
+  await allGetRoutes(`http://localhost:3001/api/role`);
+  let titles = [];
+  // console.log("table ",table);
+  for(i=0;i<table.length;i++) {
+    titles.push(table[i].title);
+  };
+  console.log('|----------------------------------|');
+  console.log(' All Departments at the oranization');
+  console.log('|----------------------------------|');
+  await allGetRoutes(`http://localhost:3001/api/department`);
+  let departments=[];
+  for(i=0;i<table.length;i++) {
+    departments.push(table[i].id);
+  };
+  // console.log(employeeChoices);
+  await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'name',
+        message: `Enter the new role name that you would like to add: `,
+        validate: inputCheck => {
+          for(i=0;i<titles.length;i++) {
+            if (titles[i]==inputCheck){
+              console.log(' Please create a title that does not already exist!');
+              return false;
+            }
+          };
+          return true;
+        }
+      }, 
+      {
+        type: 'input',
+        name: 'salary',
+        message: `Enter the salary for this role: `,
+        validate: inputCheck => {
+            if (inputCheck){
+              return true;
+            }
+            else{
+              console.log(' Please enter a valid salary');
+              return false;
+            }
+        }
+      }, 
+      {
+        type: 'input',
+        name: 'dep',
+        message: `Enter the department id that you want to add this role to: `,
+        validate: inputCheck => {
+          for(i=0;i<departments.length;i++) {
+            if (departments[i]==inputCheck){
+              return true;
+            }
+          };
+          console.log(' Please enter a valid department id!');
+          return false;
+        }
+      }
+    ])
+    .then(answers => {
+       fetch(`http://localhost:3001/api/role`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: answers.name,
+          salary: answers.salary,
+          department_id: answers.dep
+        }),
+      })
+        .then(data => data.text())
+        .then(text => {
+          let rows = JSON.parse(text);
+          console.log('-------------')
+          console.log(rows.message,`, new role has been added!`,);
+          console.log('-------------');
+          console.log('|----------------------------|');
+          console.log(' All Roles at the oranization');
+          console.log('|----------------------------|');
+          allGetRoutes(`http://localhost:3001/api/role`);
+        })
+    });
+};
+
+async function addEmployee() {
+  console.log('|----------------------------|');
+  console.log(' All Roles at the oranization');
+  console.log('|----------------------------|');
+  await allGetRoutes(`http://localhost:3001/api/role`);
+  let titles = [];
+  // console.log("table ",table);
+  for(i=0;i<table.length;i++) {
+    titles.push(table[i].id);
+  };
+  console.log('|----------------------------------|');
+  console.log(' All Managers at the oranization');
+  console.log('|----------------------------------|');
+  await allGetRoutes(`http://localhost:3001/api/managersort`);
+  let manager=[0];
+  for(i=0;i<table.length;i++) {
+    manager.push(table[i].id);
+  };
+  // console.log(employeeChoices);
+  await inquirer.prompt([
+      {
+        type: 'input',
+        name: 'fname',
+        message: `Enter the first name of the employee: `,
+        validate: inputCheck => {
+          if (inputCheck){
+            return true;
+          }
+          else{
+            console.log(' Please enter a first name!');
+            return false;
+          }
+        }
+      }, 
+      {
+        type: 'input',
+        name: 'lname',
+        message: `Enter the last name of the employee: `,
+        validate: inputCheck => {
+          if (inputCheck){
+            return true;
+          }
+          else{
+            console.log(' Please enter a last name!');
+            return false;
+          }
+        }
+      },
+      {
+        type: 'input',
+        name: 'role',
+        message: `Enter the role id of this new employee `,
+        validate: inputCheck => {
+          for(i=0;i<titles.length;i++) {
+            if (titles[i]==inputCheck){
+              return true;
+            }
+          };
+          console.log(' Please enter a valid role id!');
+          return false;
+        }
+      }, 
+      {
+        type: 'input',
+        name: 'mid',
+        message: `Enter the manager's id for the new employee `,
+        validate: inputCheck => {
+          for(i=0;i<manager.length;i++) {
+            if (manager[i]==inputCheck){
+              return true;
+            }
+          };
+          console.log(' Please enter a valid manager id!');
+          return false;
+        }
+      }
+    ])
+    .then(answers => {
+       fetch(`http://localhost:3001/api/employee`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          first_name: answers.fname,
+          last_name: answers.lname,
+          role_id: answers.role,
+          manager_id: answers.mid
+        }),
+      })
+        .then(data => data.text())
+        .then(text => {
+          let rows = JSON.parse(text);
+          console.log('-------------')
+          console.log(rows.message,`, new employee has been added!`,);
+          console.log('-------------');
+          console.log('|--------------------------------|');
+          console.log(' All employees at the oranization');
+          console.log('|--------------------------------|');
+          allGetRoutes(`http://localhost:3001/api/employee`);
+        })
+    });
+};
+
+function restart() {
+  inquirer.prompt(
+    {
+      type:'list',
+      name:'restart',
+      message: 'Would you like to perform another funtion?',
+      choices: ['Yes','No']
+    }
+  ).then(({restart})=> {
+      if(restart==='Yes')
+          startApp();
+      else {
+        console.log('--------------------------------------');
+        console.log('_________ Have a great day!___________');
+        console.log('--------------------------------------');
+        process.exit();
+      }
+  });
+};
+
+startApp();
