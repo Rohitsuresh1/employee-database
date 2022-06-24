@@ -23,7 +23,11 @@ The app needs to be cloned from the repository, all dependencies installed and t
 
 <a name="usage"></a>
 ## Usage
-None
+
+![Screenshot](./utils/images/Screen%20Shot%202022-06-23%20at%2010.09.03%20PM.png)
+![Screenshot](./utils/images/Screen%20Shot%202022-06-23%20at%2010.09.14%20PM.png)
+![Screenshot](./utils/images/Screen%20Shot%202022-06-23%20at%2010.09.24%20PM.png)
+
     
 <a name="license"></a>
 ## License
