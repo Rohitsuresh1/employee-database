@@ -21,6 +21,8 @@ A node application that uses user input data to store and serve data through a m
 ## Installation
 The app needs to be cloned from the repository, all dependencies installed and the data needs to be seeded through starting mysql database and using database,schema and seed files. Application can then be lauched by running npm start command.
 
+video walkthrough for the app: https://1drv.ms/v/s!AsYlxac97Fv_kUKQ2fSTayWAxcSg?e=hZ7Xh7
+
 <a name="usage"></a>
 ## Usage
 
